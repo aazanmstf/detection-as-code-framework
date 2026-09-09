@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Detection as Code Dashboard</title>
+  <link rel="stylesheet" href="/style.css" />
+</head>
+<body>
+  <header class="topbar">
+    <div class="topbar-title">
+      <h1>Detection as Code Dashboard</h1>
+      <p class="subtitle">Local view of Sigma rule validation, quality, and MITRE ATT&amp;CK coverage</p>
+    </div>
+    <div class="topbar-actions">
+      <span id="result-badge" class="badge badge-pending">Loading...</span>
+      <button id="run-validation" class="btn">Run Validation</button>
+    </div>
+  </header>
+
+  <main>
+    <section class="summary-grid" id="summary-grid">
+      <div class="summary-card">
+        <div class="summary-value" id="stat-rules">-</div>
+        <div class="summary-label">Rules Discovered</div>
+      </div>
+      <div class="summary-card">
+        <div class="summary-value" id="stat-score">-</div>
+        <div class="summary-label">Average Quality Score</div>
+      </div>
+      <div class="summary-card">
+        <div class="summary-value" id="stat-techniques">-</div>
+        <div class="summary-label">Unique ATT&amp;CK Techniques</div>
+      </div>
+      <div class="summary-card">
+        <div class="summary-value" id="stat-unmapped">-</div>
+        <div class="summary-label">Unmapped Rules</div>
+      </div>
+    </section>
+
+    <section class="panel">
+      <h2>Detection Rules</h2>
+      <table class="rules-table" id="rules-table">
+        <thead>
+          <tr>
+            <th>Status</th>
+            <th>Title</th>
+            <th>File</th>
+            <th>ATT&amp;CK</th>
+            <th>Score</th>
+          </tr>
+        </thead>
+        <tbody id="rules-body">
+          <tr><td colspan="5" class="empty-row">Loading rules...</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section class="panel">
+      <h2>MITRE ATT&amp;CK Coverage <span class="panel-note">(repository-level)</span></h2>
+      <table class="coverage-table" id="coverage-table">
+        <thead>
+          <tr>
+            <th>Technique</th>
+            <th>Name</th>
+            <th>Rules</th>
+          </tr>
+        </thead>
+        <tbody id="coverage-body">
+          <tr><td colspan="3" class="empty-row">Loading coverage...</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section class="panel" id="issues-panel" hidden>
+      <h2>Validation Issues</h2>
+      <ul class="issues-list" id="issues-list"></ul>
+    </section>
+
+    <footer class="footer-note">
+      Static Sigma rule validation only - no live SIEM, no Splunk connection.
+      Data comes from <code>validator/</code> via <code>dashboard/backend.py</code>.
+    </footer>
+  </main>
+
+  <script src="/app.js"></script>
+</body>
+</html>

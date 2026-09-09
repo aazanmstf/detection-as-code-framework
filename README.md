@@ -83,6 +83,8 @@ of each component and a Mermaid diagram.
 - Human-readable and `--json` CLI output
 - 52 pytest tests covering both valid and intentionally broken fixtures
 - GitHub Actions workflow that blocks merge on any failure
+- Local web dashboard (stdlib-only, no new dependencies) showing rules,
+  quality scores, ATT&CK coverage, and a one-click **Run Validation** button
 
 ## Repository Structure
 
@@ -114,6 +116,12 @@ detection-as-code-framework/
 │   └── coverage.py
 ├── scripts/
 │   └── validate.py
+├── dashboard/
+│   ├── backend.py
+│   └── static/
+│       ├── index.html
+│       ├── style.css
+│       └── app.js
 ├── tests/
 │   ├── test_metadata.py
 │   ├── test_detection_logic.py
@@ -305,6 +313,83 @@ they're designed to exercise).
 > confirmed to exit `0` on the clean repository and `1` when a
 > production rule was deliberately broken. Please re-run `pytest`
 > locally to verify in your own environment.
+
+## Web Dashboard
+
+A small local dashboard is included for visually reviewing rule status
+without reading CLI output. It is purely additive: `dashboard/backend.py`
+only *imports and calls* the existing `validator` package
+(`validate_repository`, `build_coverage_report`) the same way
+`scripts/validate.py` does — no validator code was changed to build it,
+and no new dependencies are required (it uses only Python's standard
+library `http.server`).
+
+```
+dashboard/
+├── backend.py       # local HTTP server + API, reuses validator/ as-is
+└── static/
+    ├── index.html   # dashboard layout
+    ├── style.css    # dark, minimal styling
+    └── app.js        # fetches /api/validate and renders the UI
+```
+
+It shows:
+
+- The 5 detection rules, each with PASS/FAIL status, quality score, and
+  mapped ATT&CK techniques
+- A repository-level MITRE ATT&CK coverage table
+- An overall PASS/FAIL badge
+- A **Run Validation** button that re-runs the real validator on demand
+  and refreshes the page's data — no page reload needed
+
+### Running the dashboard
+
+From the repository root:
+
+```bash
+python dashboard/backend.py
+```
+
+This starts a local server at `http://127.0.0.1:8765` and opens it in
+your default browser automatically. If it doesn't open on its own,
+navigate to that URL manually. Press `Ctrl+C` in the terminal to stop
+the server.
+
+The dashboard talks to a single JSON endpoint, `GET/POST /api/validate`,
+which runs `validate_repository()` fresh on every call — so clicking
+**Run Validation** after editing a rule file shows the real, current
+result, not cached data.
+
+### Opening it in VS Code
+
+1. Open the `detection-as-code-framework` folder in VS Code
+   (**File → Open Folder...**, select the repo root — the one containing
+   `README.md`, `validator/`, and `dashboard/`).
+2. Make sure your Python interpreter is selected: open the Command
+   Palette (`Ctrl+Shift+P` / `Cmd+Shift+P`) → **Python: Select
+   Interpreter** → choose the Python 3.11+ environment where you ran
+   `pip install -r requirements.txt`.
+3. Open a terminal inside VS Code: **Terminal → New Terminal** (or
+   `` Ctrl+` ``). This opens a shell already rooted at the repo folder.
+4. In that terminal, run:
+   ```bash
+   python dashboard/backend.py
+   ```
+5. VS Code will show the server's console output
+   (`Detection as Code dashboard running at http://127.0.0.1:8765`) in
+   the integrated terminal, and your browser will open the dashboard
+   automatically. If VS Code shows a "port forwarding" popup, you can
+   dismiss it — this is a local-only server and doesn't need it.
+6. To stop it, click into the integrated terminal and press `Ctrl+C`.
+
+You can also run it via VS Code's **Run → Run Without Debugging**
+(`Ctrl+F5`) with `dashboard/backend.py` open and focused as the active
+file — VS Code will run it the same way as the terminal command above.
+
+Editing a rule in `detections/` while the dashboard is running and then
+clicking **Run Validation** is the fastest way to see how a change
+affects PASS/FAIL status, score, and ATT&CK coverage without leaving the
+browser.
 
 ## CI/CD
 

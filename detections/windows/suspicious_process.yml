@@ -1,0 +1,36 @@
+title: Suspicious Process Execution From Temporary Directory
+id: 2e8d4f5a-6c1b-4a9e-b3d7-5a2c9e1f4b06
+status: stable
+description: >
+  Detects executable processes launched directly from user-writable
+  temporary directories such as %TEMP%, %APPDATA%, or the Downloads
+  folder. Malware droppers and payloads delivered via phishing or
+  browser-based downloads frequently execute from these paths because
+  they do not require elevated privileges to write to them.
+author: Detection Engineering Portfolio
+date: 2024-11-03
+modified: 2024-11-03
+logsource:
+  category: process_creation
+  product: windows
+detection:
+  selection_paths:
+    Image|contains:
+      - '\AppData\Local\Temp\'
+      - '\Users\Public\'
+      - '\Downloads\'
+  filter_common_tools:
+    Image|endswith:
+      - '\msedge_installer.exe'
+      - '\GoogleUpdateSetup.exe'
+  condition: selection_paths and not filter_common_tools
+falsepositives:
+  - Software installers legitimately downloaded by users and executed
+    once from the Downloads folder. Update the filter list with known
+    vendor installer names to reduce noise, or scope this rule to
+    endpoints where such installs are unexpected.
+level: medium
+tags:
+  - attack.execution
+  - attack.defense_evasion
+  - attack.t1204.002

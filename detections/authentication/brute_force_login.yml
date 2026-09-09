@@ -1,0 +1,39 @@
+title: Multiple Failed Authentication Attempts Followed By Success
+id: 4b7c1d9e-3a5f-4e8b-9c2d-6f1a8e3b5d27
+status: stable
+description: >
+  Detects a high volume of failed authentication attempts against a single
+  account within a short time window, followed by a successful login from
+  the same source. This pattern is indicative of password-guessing or
+  password-spraying attacks that eventually succeed, and warrants
+  investigation of the source and subsequent account activity.
+author: Detection Engineering Portfolio
+date: 2024-11-04
+modified: 2024-11-04
+logsource:
+  category: authentication
+  product: windows
+  service: security
+detection:
+  selection_failure:
+    EventID: 4625
+  selection_success:
+    EventID: 4624
+  condition: selection_failure or selection_success
+falsepositives:
+  - Users who repeatedly mistype their password before eventually logging
+    in successfully. Correlate with account and source IP thresholds
+    (for example, 5 or more failures within 10 minutes) in the SIEM
+    correlation layer to reduce single-user false positives, since Sigma's
+    static rule cannot express stateful thresholds on its own.
+level: medium
+tags:
+  - attack.credential_access
+  - attack.t1110
+x_splunk:
+  data_model: Authentication
+  query_type: tstats
+  fields:
+    - Authentication.user
+    - Authentication.src
+    - Authentication.action

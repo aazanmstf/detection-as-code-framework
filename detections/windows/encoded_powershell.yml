@@ -1,0 +1,42 @@
+title: PowerShell Execution Using Encoded Command Argument
+id: 9a4e6b31-1d2f-4c5a-8b7e-3f0a6d9c2e14
+status: stable
+description: >
+  Detects PowerShell being invoked with the -EncodedCommand (or its short
+  aliases -enc/-e) parameter, which passes a Base64-encoded script block on
+  the command line. Attackers commonly use this technique to obfuscate
+  malicious commands and evade simple string-based content inspection.
+author: Detection Engineering Portfolio
+date: 2024-11-02
+modified: 2024-11-02
+logsource:
+  category: process_creation
+  product: windows
+detection:
+  selection_process:
+    Image|endswith: '\powershell.exe'
+  selection_encoded:
+    CommandLine|contains:
+      - '-EncodedCommand'
+      - '-enc '
+      - '-EncodedComm'
+      - ' -e '
+  condition: selection_process and selection_encoded
+falsepositives:
+  - Some legitimate configuration management tools (DSC, Group Policy
+    scripts) use encoded commands to safely pass complex parameters.
+    Review the decoded Base64 payload and correlate with known
+    administrative scheduled tasks before escalating.
+level: medium
+tags:
+  - attack.execution
+  - attack.defense_evasion
+  - attack.t1059.001
+  - attack.t1027
+x_splunk:
+  data_model: Endpoint
+  query_type: tstats
+  fields:
+    - Processes.process
+    - Processes.process_name
+    - Processes.parent_process_name

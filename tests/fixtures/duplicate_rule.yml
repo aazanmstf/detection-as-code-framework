@@ -1,0 +1,21 @@
+title: Fixture - Duplicate ID Sample Rule
+id: 1a2b3c4d-5e6f-4a1b-8c2d-3e4f5a6b7c8d
+status: test
+description: >
+  A fixture rule that intentionally reuses the same detection ID as
+  valid_rule.yml, used by the test suite to verify duplicate ID detection
+  across the repository.
+author: Test Fixture
+date: 2024-01-02
+logsource:
+  category: process_creation
+  product: windows
+detection:
+  selection:
+    Image|endswith: '\powershell.exe'
+  condition: selection
+falsepositives:
+  - Administrative PowerShell usage.
+level: low
+tags:
+  - attack.t1059.001

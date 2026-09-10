@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% block title %}Register - Detection as Code{% endblock %}
+{% block content %}
+<section class="panel auth-panel">
+  <h2>Create an account</h2>
+  <form method="post" action="{{ url_for('auth.register') }}" class="stack-form">
+    {{ csrf_field() }}
+    <label for="username">Username</label>
+    <input type="text" id="username" name="username" value="{{ username }}" autocomplete="username" required />
+    <p class="field-hint">3-32 characters: letters, numbers, dots, dashes, underscores.</p>
+
+    <label for="email">Email</label>
+    <input type="email" id="email" name="email" value="{{ email }}" autocomplete="email" required />
+
+    <label for="password">Password</label>
+    <input type="password" id="password" name="password" autocomplete="new-password" required />
+    <p class="field-hint">At least 10 characters, with a letter and a number.</p>
+
+    <label for="confirm_password">Confirm password</label>
+    <input type="password" id="confirm_password" name="confirm_password" autocomplete="new-password" required />
+
+    <button type="submit" class="btn">Create account</button>
+  </form>
+  <p class="auth-switch">Already have an account? <a href="{{ url_for('auth.login') }}">Log in</a></p>
+</section>
+{% endblock %}

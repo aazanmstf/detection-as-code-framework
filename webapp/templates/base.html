@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>{% block title %}Detection as Code{% endblock %}</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}" />
+</head>
+<body>
+  <header class="topbar">
+    <div class="topbar-title">
+      <a href="{{ url_for('validation.upload') }}" class="brand">Detection as Code</a>
+      <p class="subtitle">Sigma rule validation - upload, validate, explain, track</p>
+    </div>
+    <nav class="topbar-nav">
+      {% if current_user %}
+        <a href="{{ url_for('validation.upload') }}">Upload</a>
+        <a href="{{ url_for('validation.history') }}">History</a>
+        <span class="nav-user">{{ current_user['username'] }}</span>
+        <form method="post" action="{{ url_for('auth.logout') }}" class="inline-form">
+          {{ csrf_field() }}
+          <button type="submit" class="btn btn-ghost">Log out</button>
+        </form>
+      {% else %}
+        <a href="{{ url_for('auth.login') }}">Log in</a>
+        <a href="{{ url_for('auth.register') }}">Register</a>
+      {% endif %}
+    </nav>
+  </header>
+
+  <main>
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        <div class="flash-stack">
+          {% for category, message in messages %}
+            <div class="flash flash-{{ category }}">{{ message }}</div>
+          {% endfor %}
+        </div>
+      {% endif %}
+    {% endwith %}
+
+    {% block content %}{% endblock %}
+  </main>
+
+  <footer class="footer-note">
+    Static Sigma rule validation only - no live SIEM connection.
+    Reuses the existing <code>validator/</code> package unchanged.
+  </footer>
+</body>
+</html>

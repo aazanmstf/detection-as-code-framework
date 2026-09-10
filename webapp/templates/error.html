@@ -1,0 +1,9 @@
+{% extends "base.html" %}
+{% block title %}{{ code }} - Detection as Code{% endblock %}
+{% block content %}
+<section class="panel">
+  <h2>{{ code }}</h2>
+  <p>{{ message }}</p>
+  <a class="btn" href="{{ url_for('validation.upload') }}">Back to Upload</a>
+</section>
+{% endblock %}

@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+{% block title %}Upload - Detection as Code{% endblock %}
+{% block content %}
+
+<section class="panel">
+  <h2>Upload a Sigma Rule</h2>
+  <p class="panel-note">Upload a single .yml/.yaml Sigma rule for instant validation against the same checks used in CI.</p>
+  <form method="post" action="{{ url_for('validation.submit_upload') }}" enctype="multipart/form-data" class="stack-form">
+    {{ csrf_field() }}
+    <input type="file" name="rule_file" accept=".yml,.yaml" required />
+    <button type="submit" class="btn">Validate</button>
+  </form>
+</section>
+
+{% if result %}
+<section class="panel">
+  <div class="result-header">
+    <h2>Result: {{ result.original_filename }}</h2>
+    <span class="badge {{ 'badge-pass' if result.result == 'PASS' else 'badge-fail' }}">{{ result.result }}</span>
+  </div>
+
+  <div class="summary-grid">
+    <div class="summary-card">
+      <div class="summary-value">{{ result.score }}/100</div>
+      <div class="summary-label">Quality Score</div>
+    </div>
+    <div class="summary-card">
+      <div class="summary-value">{{ result.attack_techniques | length }}</div>
+      <div class="summary-label">ATT&amp;CK Techniques</div>
+    </div>
+    <div class="summary-card">
+      <div class="summary-value">{{ result.issues | length }}</div>
+      <div class="summary-label">Issues Found</div>
+    </div>
+  </div>
+
+  <p><strong>Title:</strong> {{ result.rule_title or "(none)" }}</p>
+  <p><strong>Rule ID:</strong> {{ result.rule_id or "(none / invalid)" }}</p>
+  {% if result.attack_techniques %}
+    <p><strong>ATT&amp;CK:</strong>
+      {% for t in result.attack_techniques %}<span class="technique-tag">{{ t }}</span>{% endfor %}
+    </p>
+  {% endif %}
+
+  <a class="btn btn-secondary" href="{{ url_for('validation.download_report', run_id=result.id) }}">Download Report (.txt)</a>
+
+  {% if result.issues %}
+    <h3>Issues &amp; Suggested Fixes</h3>
+    <ul class="issues-list">
+      {% for issue in result.issues %}
+        <li class="issue-card issue-{{ issue.severity }}">
+          <div class="issue-title">[{{ issue.severity | upper }}] {{ issue.check }}</div>
+          <div class="issue-message">{{ issue.message }}</div>
+          <div class="issue-explain"><strong>What this means:</strong> {{ issue.plain_english }}</div>
+          <div class="issue-fix"><strong>Suggested fix:</strong> {{ issue.fix }}</div>
+        </li>
+      {% endfor %}
+    </ul>
+  {% else %}
+    <p class="all-clear">No issues found - this rule passed every check.</p>
+  {% endif %}
+</section>
+{% endif %}
+
+{% endblock %}

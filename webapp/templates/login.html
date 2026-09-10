@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% block title %}Log in - Detection as Code{% endblock %}
+{% block content %}
+<section class="panel auth-panel">
+  <h2>Log in</h2>
+  <form method="post" action="{{ url_for('auth.login') }}" class="stack-form">
+    {{ csrf_field() }}
+    <label for="username">Username or email</label>
+    <input type="text" id="username" name="username" value="{{ username }}" autocomplete="username" required />
+
+    <label for="password">Password</label>
+    <input type="password" id="password" name="password" autocomplete="current-password" required />
+
+    <button type="submit" class="btn">Log in</button>
+  </form>
+  <p class="auth-switch">No account yet? <a href="{{ url_for('auth.register') }}">Register</a></p>
+</section>
+{% endblock %}

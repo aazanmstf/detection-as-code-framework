@@ -24,3 +24,10 @@ ENV/
 
 .DS_Store
 Thumbs.db
+
+# Webapp secrets and local state - never commit these.
+webapp/.env
+webapp/instance/
+*.db
+*.db-journal
+

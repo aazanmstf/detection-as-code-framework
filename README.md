@@ -122,6 +122,22 @@ detection-as-code-framework/
 │       ├── index.html
 │       ├── style.css
 │       └── app.js
+├── webapp/
+│   ├── app.py
+│   ├── auth.py
+│   ├── validation_routes.py
+│   ├── validation_service.py
+│   ├── explain.py
+│   ├── security.py
+│   ├── models.py
+│   ├── config.py
+│   ├── wsgi.py
+│   ├── init_db.py
+│   ├── .env.example
+│   ├── templates/
+│   └── static/
+├── requirements-webapp.txt
+├── DEPLOYMENT.md
 ├── tests/
 │   ├── test_metadata.py
 │   ├── test_detection_logic.py
@@ -134,7 +150,8 @@ detection-as-code-framework/
 │       └── duplicate_rule.yml
 └── docs/
     ├── architecture.md
-    └── validation-guide.md
+    ├── validation-guide.md
+    └── webapp-security.md
 ```
 
 ## Installation
@@ -390,6 +407,68 @@ Editing a rule in `detections/` while the dashboard is running and then
 clicking **Run Validation** is the fastest way to see how a change
 affects PASS/FAIL status, score, and ATT&CK coverage without leaving the
 browser.
+
+## Secure Web Application
+
+`webapp/` is a separate, multi-user web application built on top of the
+same unmodified `validator/` package — it's the "production-ready"
+evolution of the read-only dashboard above, adding accounts, rule
+upload, and per-user history. **It has not been deployed anywhere** —
+see [`DEPLOYMENT.md`](DEPLOYMENT.md) for what that would involve later.
+
+### What it adds
+
+- **User accounts**: registration and login with hashed passwords
+  (scrypt), a password policy, and login throttling against brute force.
+- **Sigma rule upload**: upload any `.yml`/`.yaml` file and get an
+  instant PASS/FAIL result from the same validator used by the CLI and
+  CI.
+- **Plain-English explanations**: every validator issue is paired with
+  a "what this means" explanation and a concrete suggested fix (see
+  `webapp/explain.py`), not just the raw technical message.
+- **Downloadable reports**: a `.txt` report per validation run,
+  generated on demand from stored results.
+- **Per-user history**: every user sees only their own past validation
+  runs, enforced at the database query level and re-checked on every
+  request (protected against insecure direct object references).
+- **Production-oriented security**: CSRF protection on every form,
+  hardened session cookies, security response headers, parameterized
+  SQL throughout, and an upload path that never trusts a filename or
+  executes uploaded content. Full write-up in
+  [`docs/webapp-security.md`](docs/webapp-security.md).
+
+### Running it locally
+
+```bash
+pip install -r requirements.txt -r requirements-webapp.txt
+cp webapp/.env.example webapp/.env
+python webapp/app.py
+```
+
+Open `http://127.0.0.1:5000`, register an account, and upload a rule.
+The SQLite database is created automatically under
+`webapp/instance/webapp.db` (gitignored — never committed).
+
+Run its test suite (20 tests covering auth, upload validation,
+authorization, CSRF, and rate limiting):
+
+```bash
+pytest webapp/tests
+```
+
+This suite is intentionally kept **outside** the root `tests/` directory
+and out of `requirements.txt`, so the existing GitHub Actions workflow —
+which only installs `requirements.txt` and runs `pytest` against the
+original `tests/` folder — is completely unaffected by the webapp's
+Flask dependency.
+
+### How this relates to `dashboard/`
+
+`dashboard/` (documented above) remains exactly as it was: a small,
+no-login, local-only viewer good for a quick check while developing
+rules. `webapp/` is the separate, secure, multi-user application meant
+for eventual real deployment. Both call the same unmodified
+`validator/` package and can be run independently of each other.
 
 ## CI/CD
 

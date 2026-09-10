@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+{% block title %}History - Detection as Code{% endblock %}
+{% block content %}
+<section class="panel">
+  <h2>Your Validation History</h2>
+  {% if not runs %}
+    <p class="empty-row">You haven't validated any rules yet. <a href="{{ url_for('validation.upload') }}">Upload one</a>.</p>
+  {% else %}
+    <table class="rules-table">
+      <thead>
+        <tr>
+          <th>Status</th>
+          <th>File</th>
+          <th>Title</th>
+          <th>Score</th>
+          <th>Submitted</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for run in runs %}
+          <tr>
+            <td><span class="status-dot {{ 'pass' if run.result == 'PASS' else 'fail' }}"></span>{{ run.result }}</td>
+            <td class="file-path">{{ run.original_filename }}</td>
+            <td>{{ run.rule_title or "(none)" }}</td>
+            <td>{{ run.score }}/100</td>
+            <td class="file-path">{{ run.submitted_at }}</td>
+            <td>
+              <a href="{{ url_for('validation.view_run', run_id=run.id) }}">View</a>
+              &middot;
+              <a href="{{ url_for('validation.download_report', run_id=run.id) }}">Download</a>
+            </td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  {% endif %}
+</section>
+{% endblock %}

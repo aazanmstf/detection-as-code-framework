@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>{% block title %}Detection as Code{% endblock %}</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}" />
+</head>
+<body class="{% if not current_user %}is-unauthenticated{% endif %}">
+
+  <div class="grid-backdrop" aria-hidden="true"></div>
+
+  {% if current_user %}
+  <div class="app-shell">
+    <header class="app-header">
+      <div class="app-header-left">
+        <button class="sidebar-toggle" id="sidebar-toggle" aria-label="Toggle navigation" aria-expanded="false" aria-controls="app-sidebar">
+          <span></span><span></span><span></span>
+        </button>
+        <a href="{{ url_for('validation.dashboard') }}" class="brand">
+          <span class="brand-mark" aria-hidden="true">&#9635;</span>
+          <span class="brand-text">
+            <span class="brand-name">Detection as Code</span>
+            <span class="brand-tag">SOC Validation Platform</span>
+          </span>
+        </a>
+      </div>
+
+      <div class="app-header-right">
+        <div class="workspace-pill" title="Local, single-tenant workspace">
+          <span class="status-pulse" aria-hidden="true"></span>
+          Local Workspace
+        </div>
+        <div class="user-area">
+          <div class="user-avatar" aria-hidden="true">{{ current_user['username'][:1] | upper }}</div>
+          <div class="user-meta">
+            <span class="user-name">{{ current_user['username'] }}</span>
+            <span class="user-role">Analyst</span>
+          </div>
+          <form method="post" action="{{ url_for('auth.logout') }}" class="inline-form">
+            {{ csrf_field() }}
+            <button type="submit" class="btn btn-ghost btn-sm">Log out</button>
+          </form>
+        </div>
+      </div>
+    </header>
+
+    <div class="app-body">
+      <nav class="app-sidebar" id="app-sidebar" aria-label="Primary">
+        <ul class="nav-list">
+          <li>
+            <a href="{{ url_for('validation.dashboard') }}"
+               class="nav-link {{ 'active' if request.endpoint == 'validation.dashboard' }}">
+              <span class="nav-icon" aria-hidden="true">&#9635;</span> Dashboard
+            </a>
+          </li>
+          <li>
+            <a href="{{ url_for('validation.upload') }}"
+               class="nav-link {{ 'active' if request.endpoint in ['validation.upload', 'validation.view_run'] }}">
+              <span class="nav-icon" aria-hidden="true">&#9636;</span> Rules
+            </a>
+          </li>
+          <li>
+            <a href="{{ url_for('validation.history') }}"
+               class="nav-link {{ 'active' if request.endpoint == 'validation.history' }}">
+              <span class="nav-icon" aria-hidden="true">&#9202;</span> History
+            </a>
+          </li>
+          <li>
+            <a href="{{ url_for('validation.integrations') }}"
+               class="nav-link {{ 'active' if request.endpoint == 'validation.integrations' }}">
+              <span class="nav-icon" aria-hidden="true">&#9881;</span> Integrations
+            </a>
+          </li>
+          <li>
+            <a href="{{ url_for('validation.audit_logs') }}"
+               class="nav-link {{ 'active' if request.endpoint == 'validation.audit_logs' }}">
+              <span class="nav-icon" aria-hidden="true">&#128220;</span> Audit Logs
+            </a>
+          </li>
+          <li>
+            <a href="{{ url_for('validation.settings') }}"
+               class="nav-link {{ 'active' if request.endpoint == 'validation.settings' }}">
+              <span class="nav-icon" aria-hidden="true">&#9878;</span> Settings
+            </a>
+          </li>
+        </ul>
+
+        <div class="sidebar-footer">
+          <p>Static Sigma validation only.<br />No live SIEM connection.</p>
+        </div>
+      </nav>
+
+      <main class="app-main">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+          {% if messages %}
+            <div class="flash-stack">
+              {% for category, message in messages %}
+                <div class="flash flash-{{ category }}" role="status">{{ message }}</div>
+              {% endfor %}
+            </div>
+          {% endif %}
+        {% endwith %}
+
+        {% block content %}{% endblock %}
+      </main>
+    </div>
+  </div>
+
+  {% else %}
+  <!-- Unauthenticated: centered auth card, no sidebar/header chrome -->
+  <div class="auth-shell">
+    <div class="auth-brand">
+      <span class="brand-mark" aria-hidden="true">&#9635;</span>
+      <span class="brand-name">Detection as Code</span>
+      <span class="brand-tag">SOC Validation Platform</span>
+    </div>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        <div class="flash-stack">
+          {% for category, message in messages %}
+            <div class="flash flash-{{ category }}" role="status">{{ message }}</div>
+          {% endfor %}
+        </div>
+      {% endif %}
+    {% endwith %}
+
+    {% block auth_content %}{% endblock %}
+  </div>
+  {% endif %}
+
+  <script src="{{ url_for('static', filename='app.js') }}"></script>
+</body>
+</html>

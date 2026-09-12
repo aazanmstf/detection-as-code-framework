@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+{% block title %}History - Detection as Code{% endblock %}
+{% block content %}
+
+<div class="page-heading">
+  <h1>Validation History</h1>
+  <p class="page-subtitle">Every rule you've submitted to this workspace, most recent first.</p>
+</div>
+
+<section class="panel reveal-up">
+  {% if not runs %}
+    <div class="empty-state">
+      <span class="empty-icon" aria-hidden="true">&#9202;</span>
+      <h3>No validation history yet</h3>
+      <p>Rules you validate will appear here. <a href="{{ url_for('validation.upload') }}">Upload your first rule</a>.</p>
+    </div>
+  {% else %}
+    <div class="table-scroll">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Status</th>
+            <th>File</th>
+            <th>Title</th>
+            <th>Score</th>
+            <th>Submitted</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for run in runs %}
+            <tr class="reveal-item" style="--reveal-delay: {{ loop.index0 * 40 }}ms">
+              <td><span class="status-dot {{ 'pass' if run.result == 'PASS' else 'fail' }}"></span>{{ run.result }}</td>
+              <td class="mono">{{ run.original_filename }}</td>
+              <td>{{ run.rule_title or "(none)" }}</td>
+              <td class="score-cell {{ 'score-high' if run.score >= 90 else ('score-mid' if run.score >= 70 else 'score-low') }}">{{ run.score }}/100</td>
+              <td class="mono muted">{{ run.submitted_at }}</td>
+              <td class="table-actions">
+                <a href="{{ url_for('validation.view_run', run_id=run.id) }}">View</a>
+                <span aria-hidden="true">&middot;</span>
+                <a href="{{ url_for('validation.download_report', run_id=run.id) }}">Download</a>
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  {% endif %}
+</section>
+{% endblock %}

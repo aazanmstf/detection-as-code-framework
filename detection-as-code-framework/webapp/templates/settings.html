@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% block title %}Settings - Detection as Code{% endblock %}
+{% block content %}
+
+<div class="page-heading">
+  <h1>Settings</h1>
+  <p class="page-subtitle">Account details for this workspace.</p>
+</div>
+
+<section class="panel reveal-up">
+  <h2>Account</h2>
+  <dl class="meta-list meta-list-wide">
+    <div><dt>Username</dt><dd>{{ current_user['username'] }}</dd></div>
+    <div><dt>Email</dt><dd>{{ current_user['email'] }}</dd></div>
+    <div><dt>Account created</dt><dd class="mono">{{ current_user['created_at'] }}</dd></div>
+    <div><dt>Rules validated</dt><dd>{{ run_count }}</dd></div>
+  </dl>
+</section>
+
+<section class="panel reveal-up">
+  <h2>Security</h2>
+  <ul class="settings-list">
+    <li>Passwords are hashed with a salted, memory-hard algorithm (scrypt) - never stored in plaintext.</li>
+    <li>Every form submission on this site is protected against cross-site request forgery (CSRF).</li>
+    <li>Login attempts are rate-limited to slow down password guessing.</li>
+    <li>Your validation history and reports are visible only to your account.</li>
+  </ul>
+  <p class="panel-note">
+    Full write-up: see <code>docs/webapp-security.md</code> in the project repository.
+  </p>
+</section>
+
+{% endblock %}

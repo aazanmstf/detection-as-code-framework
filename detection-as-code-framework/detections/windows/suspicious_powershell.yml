@@ -1,0 +1,44 @@
+title: Suspicious PowerShell Execution With Download Cradle
+id: 7c3f1a2e-4b6d-4e2a-9f1c-2d5e8a9b1c33
+status: stable
+description: >
+  Detects PowerShell processes launched with command-line arguments commonly
+  associated with download cradles or execution bypass techniques, such as
+  hidden windows, disabled execution policy, and non-interactive flags
+  combined with a web-download cmdlet. This pattern is frequently used in
+  the early stages of malware delivery and living-off-the-land attacks.
+author: Detection Engineering Portfolio
+date: 2024-11-02
+modified: 2024-11-02
+logsource:
+  category: process_creation
+  product: windows
+detection:
+  selection_process:
+    Image|endswith: '\powershell.exe'
+  selection_flags:
+    CommandLine|contains|all:
+      - '-WindowStyle Hidden'
+      - '-ExecutionPolicy Bypass'
+  selection_download:
+    CommandLine|contains:
+      - 'DownloadString'
+      - 'DownloadFile'
+      - 'Net.WebClient'
+  condition: selection_process and selection_flags and selection_download
+falsepositives:
+  - Legitimate administrative scripts that intentionally suppress the
+    PowerShell window and bypass execution policy for automated deployment
+    tools (e.g., SCCM, Intune remediation scripts). Baseline known
+    deployment tooling and exclude by parent process or script hash.
+level: high
+tags:
+  - attack.execution
+  - attack.t1059.001
+x_splunk:
+  data_model: Endpoint
+  query_type: tstats
+  fields:
+    - Processes.process
+    - Processes.parent_process
+    - Processes.process_name

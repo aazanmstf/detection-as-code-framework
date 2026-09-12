@@ -1,0 +1,46 @@
+title: Security Tool Service Stopped or Disabled Via Command Line
+id: 8f2a5c3d-7e1b-4d6a-a4c8-9b3e5d2f7a41
+status: experimental
+description: >
+  Detects command-line usage of native Windows utilities (sc.exe, net.exe,
+  or PowerShell service cmdlets) to stop, disable, or delete services
+  associated with common endpoint security and monitoring products.
+  Adversaries frequently disable defensive tooling prior to deploying
+  additional malware or ransomware to avoid detection.
+author: Detection Engineering Portfolio
+date: 2024-11-05
+modified: 2024-11-05
+logsource:
+  category: process_creation
+  product: windows
+detection:
+  selection_tools:
+    Image|endswith:
+      - '\sc.exe'
+      - '\net.exe'
+      - '\net1.exe'
+      - '\powershell.exe'
+  selection_action:
+    CommandLine|contains:
+      - 'stop'
+      - 'disable'
+      - 'delete'
+      - 'Stop-Service'
+      - 'Set-Service'
+  selection_target:
+    CommandLine|contains:
+      - 'WinDefend'
+      - 'Sense'
+      - 'CSFalconService'
+      - 'SepMasterService'
+      - 'MsMpEng'
+  condition: selection_tools and selection_action and selection_target
+falsepositives:
+  - Authorized security engineering activity such as scheduled maintenance,
+    agent upgrades, or migrations between endpoint security vendors that
+    require temporarily stopping a service. Correlate with a documented
+    change window before treating this as high severity.
+level: high
+tags:
+  - attack.defense_evasion
+  - attack.t1562.001

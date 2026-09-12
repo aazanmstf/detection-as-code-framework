@@ -1,0 +1,101 @@
+{% extends "base.html" %}
+{% block title %}Rules - Detection as Code{% endblock %}
+{% block content %}
+
+<div class="page-heading">
+  <h1>Rule Validation Workspace</h1>
+  <p class="page-subtitle">Upload a Sigma rule for instant metadata, logic, ATT&amp;CK, and Splunk-metadata validation.</p>
+</div>
+
+<section class="panel reveal-up">
+  <form method="post" action="{{ url_for('validation.submit_upload') }}" enctype="multipart/form-data" id="upload-form">
+    {{ csrf_field() }}
+    <div class="dropzone" id="dropzone" tabindex="0" role="button" aria-label="Upload Sigma rule file">
+      <input type="file" name="rule_file" id="rule_file" accept=".yml,.yaml" required />
+      <div class="dropzone-content">
+        <span class="dropzone-icon" aria-hidden="true">&#9660;</span>
+        <p class="dropzone-title">Drag &amp; drop a Sigma rule here</p>
+        <p class="dropzone-sub">or click to browse - .yml / .yaml, up to 100&nbsp;KB</p>
+        <p class="dropzone-filename" id="dropzone-filename" hidden></p>
+      </div>
+    </div>
+    <button type="submit" class="btn btn-block" id="validate-btn">Validate Rule</button>
+  </form>
+
+  <div class="scan-overlay" id="scan-overlay" hidden aria-live="polite">
+    <div class="scan-beam" aria-hidden="true"></div>
+    <p class="scan-label">Scanning rule against validator checks&hellip;</p>
+  </div>
+</section>
+
+{% if result %}
+<section class="panel result-panel reveal-up" id="result-panel" data-result="{{ result.result }}">
+  <div class="result-header">
+    <div>
+      <h2>{{ result.original_filename }}</h2>
+      <p class="panel-note">Submitted {{ result.submitted_at }}</p>
+    </div>
+    <span class="badge badge-lg {{ 'badge-pass' if result.result == 'PASS' else 'badge-fail' }} result-badge">
+      {{ result.result }}
+    </span>
+  </div>
+
+  <div class="summary-grid">
+    <div class="summary-card">
+      <div class="summary-value">{{ result.score }}/100</div>
+      <div class="summary-label">Quality Score</div>
+    </div>
+    <div class="summary-card">
+      <div class="summary-value">{{ result.attack_techniques | length }}</div>
+      <div class="summary-label">ATT&amp;CK Techniques</div>
+    </div>
+    <div class="summary-card">
+      <div class="summary-value">{{ result.issues | length }}</div>
+      <div class="summary-label">Issues Found</div>
+    </div>
+  </div>
+
+  <dl class="meta-list">
+    <div><dt>Title</dt><dd>{{ result.rule_title or "(none)" }}</dd></div>
+    <div><dt>Rule ID</dt><dd class="mono">{{ result.rule_id or "(none / invalid)" }}</dd></div>
+  </dl>
+
+  {% if result.attack_techniques %}
+    <div class="technique-row">
+      {% for t in result.attack_techniques %}<span class="technique-tag">{{ t }}</span>{% endfor %}
+    </div>
+  {% endif %}
+
+  <a class="btn btn-secondary" href="{{ url_for('validation.download_report', run_id=result.id) }}">Download Report (.txt)</a>
+
+  {% if result.issues %}
+    <h3>Issues &amp; Suggested Fixes</h3>
+    <ul class="issues-list">
+      {% for issue in result.issues %}
+        <li class="issue-card issue-{{ issue.severity }} reveal-item" style="--reveal-delay: {{ loop.index0 * 60 }}ms">
+          <div class="issue-title">
+            <span class="issue-severity-dot {{ issue.severity }}" aria-hidden="true"></span>
+            [{{ issue.severity | upper }}] {{ issue.check }}
+          </div>
+          <div class="issue-message mono">{{ issue.message }}</div>
+          <div class="issue-explain"><strong>What this means:</strong> {{ issue.plain_english }}</div>
+          <div class="issue-fix"><strong>Suggested fix:</strong> {{ issue.fix }}</div>
+        </li>
+      {% endfor %}
+    </ul>
+  {% else %}
+    <div class="all-clear">
+      <span class="all-clear-icon" aria-hidden="true">&#10003;</span>
+      No issues found - this rule passed every check.
+    </div>
+  {% endif %}
+</section>
+{% else %}
+<section class="panel empty-state reveal-up">
+  <span class="empty-icon" aria-hidden="true">&#9636;</span>
+  <h3>No rule validated yet</h3>
+  <p>Upload a Sigma <code>.yml</code> file above to see PASS/FAIL status, a quality score, MITRE ATT&amp;CK mapping, and plain-English fixes.</p>
+</section>
+{% endif %}
+
+{% endblock %}

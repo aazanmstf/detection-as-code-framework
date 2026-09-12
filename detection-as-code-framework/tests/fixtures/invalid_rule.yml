@@ -1,0 +1,14 @@
+title: Fixture - Invalid Sample Rule
+id: not-a-valid-uuid
+status: made_up_status
+description: Too short
+logsource:
+  category: process_creation
+detection:
+  selection:
+    Image|endswith: '\evil.exe'
+  condition: nonexistent_selection
+falsepositives: []
+level: super_critical
+tags:
+  - attack.notatechnique

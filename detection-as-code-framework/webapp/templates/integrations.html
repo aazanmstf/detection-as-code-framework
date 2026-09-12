@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% block title %}Integrations - Detection as Code{% endblock %}
+{% block content %}
+
+<div class="page-heading">
+  <h1>Integrations</h1>
+  <p class="page-subtitle">External systems this workspace can connect to.</p>
+</div>
+
+<section class="panel empty-state reveal-up">
+  <span class="empty-icon" aria-hidden="true">&#9881;</span>
+  <h3>No integrations configured</h3>
+  <p>
+    This is a local, single-tenant validation workspace. It does not currently
+    connect to any external SIEM, ticketing system, or messaging platform -
+    there is nothing here to display, and this page will not show simulated
+    connections.
+  </p>
+  <p class="panel-note">
+    Splunk compatibility is checked statically as part of rule validation
+    (metadata only, no live connection) - see the
+    <a href="{{ url_for('validation.upload') }}">Rules</a> workspace and each
+    result's issue list for details.
+  </p>
+</section>
+
+{% endblock %}

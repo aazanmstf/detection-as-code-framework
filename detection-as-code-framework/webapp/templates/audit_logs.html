@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+{% block title %}Audit Logs - Detection as Code{% endblock %}
+{% block content %}
+
+<div class="page-heading">
+  <h1>Audit Logs</h1>
+  <p class="page-subtitle">Security-relevant events on your account: logins, logouts, registration, and rule uploads.</p>
+</div>
+
+<section class="panel reveal-up">
+  {% if not events %}
+    <div class="empty-state">
+      <span class="empty-icon" aria-hidden="true">&#128220;</span>
+      <h3>No audit events yet</h3>
+      <p>Sign-in and rule-upload events for your account will be recorded here as they happen.</p>
+    </div>
+  {% else %}
+    <div class="table-scroll">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Event</th>
+            <th>Detail</th>
+            <th>IP Address</th>
+            <th>Time</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for event in events %}
+            <tr class="reveal-item" style="--reveal-delay: {{ loop.index0 * 30 }}ms">
+              <td>
+                <span class="event-tag event-{{ event['event_type'] }}">{{ event['event_type'] | replace('_', ' ') }}</span>
+              </td>
+              <td>{{ event['detail'] or '' }}</td>
+              <td class="mono muted">{{ event['ip_address'] or 'unknown' }}</td>
+              <td class="mono muted">{{ event['created_at'] }}</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  {% endif %}
+</section>
+{% endblock %}

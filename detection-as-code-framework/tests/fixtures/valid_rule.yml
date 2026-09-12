@@ -1,0 +1,26 @@
+title: Fixture - Valid Sample Rule
+id: 1a2b3c4d-5e6f-4a1b-8c2d-3e4f5a6b7c8d
+status: test
+description: >
+  A minimal but fully valid fixture rule used by the test suite to verify
+  that a well-formed Sigma rule passes every validation check without
+  raising any errors.
+author: Test Fixture
+date: 2024-01-01
+logsource:
+  category: process_creation
+  product: windows
+detection:
+  selection:
+    Image|endswith: '\cmd.exe'
+  condition: selection
+falsepositives:
+  - Administrative use of the command prompt for routine tasks.
+level: low
+tags:
+  - attack.t1059
+x_splunk:
+  data_model: Endpoint
+  query_type: search
+  fields:
+    - Processes.process

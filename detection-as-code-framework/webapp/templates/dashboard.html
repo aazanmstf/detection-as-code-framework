@@ -1,0 +1,93 @@
+{% extends "base.html" %}
+{% block title %}Dashboard - Detection as Code{% endblock %}
+{% block content %}
+
+<div class="page-heading">
+  <h1>Dashboard</h1>
+  <p class="page-subtitle">Your validation activity in this workspace, computed from your own submitted rules.</p>
+</div>
+
+{% if summary.total == 0 %}
+<section class="panel empty-state reveal-up">
+  <span class="empty-icon" aria-hidden="true">&#9635;</span>
+  <h3>No validation activity yet</h3>
+  <p>Once you validate a Sigma rule, your pass rate, quality score, and ATT&amp;CK coverage will appear here.</p>
+  <a class="btn" href="{{ url_for('validation.upload') }}">Validate your first rule</a>
+</section>
+{% else %}
+
+<section class="summary-grid reveal-up">
+  <div class="summary-card summary-card-lg">
+    <div class="summary-value">{{ summary.total }}</div>
+    <div class="summary-label">Rules Validated</div>
+  </div>
+  <div class="summary-card summary-card-lg">
+    <div class="summary-value stat-pass">{{ summary.pass_rate }}%</div>
+    <div class="summary-label">Pass Rate</div>
+  </div>
+  <div class="summary-card summary-card-lg">
+    <div class="summary-value">{{ summary.avg_score }}/100</div>
+    <div class="summary-label">Avg. Quality Score</div>
+  </div>
+  <div class="summary-card summary-card-lg">
+    <div class="summary-value">{{ summary.unique_techniques }}</div>
+    <div class="summary-label">ATT&amp;CK Techniques Covered</div>
+  </div>
+</section>
+
+<div class="dashboard-columns">
+  <section class="panel reveal-up">
+    <h2>PASS / FAIL Breakdown</h2>
+    <p class="panel-note">Across {{ summary.total }} validated rule{{ '' if summary.total == 1 else 's' }} in your history.</p>
+    <div class="pf-bar" role="img" aria-label="{{ summary.passed }} passed, {{ summary.failed }} failed">
+      <div class="pf-bar-pass" style="--target-width: {{ summary.pass_rate }}%"></div>
+      <div class="pf-bar-fail" style="--target-width: {{ 100 - summary.pass_rate }}%"></div>
+    </div>
+    <div class="pf-legend">
+      <span><span class="legend-dot pass"></span> {{ summary.passed }} PASS</span>
+      <span><span class="legend-dot fail"></span> {{ summary.failed }} FAIL</span>
+    </div>
+  </section>
+
+  <section class="panel reveal-up">
+    <h2>MITRE ATT&amp;CK Coverage <span class="panel-note">(your validated rules)</span></h2>
+    {% if not summary.coverage %}
+      <div class="empty-state empty-state-inline">
+        <p>No ATT&amp;CK techniques mapped yet - validate a rule with <code>attack.*</code> tags to populate this chart.</p>
+      </div>
+    {% else %}
+      <ul class="bar-chart">
+        {% for row in summary.coverage %}
+          <li class="bar-chart-row reveal-item" style="--reveal-delay: {{ loop.index0 * 70 }}ms">
+            <span class="bar-chart-label mono">{{ row.technique }}</span>
+            <span class="bar-chart-track">
+              <span class="bar-chart-fill" style="--target-width: {{ row.percent }}%"></span>
+            </span>
+            <span class="bar-chart-count">{{ row.count }}</span>
+          </li>
+        {% endfor %}
+      </ul>
+    {% endif %}
+  </section>
+</div>
+
+<section class="panel reveal-up">
+  <div class="panel-header-row">
+    <h2>Recent Activity</h2>
+    <a href="{{ url_for('validation.history') }}" class="panel-link">View all history &rarr;</a>
+  </div>
+  <ul class="activity-list">
+    {% for run in recent_runs %}
+      <li class="activity-item reveal-item" style="--reveal-delay: {{ loop.index0 * 60 }}ms">
+        <span class="status-dot {{ 'pass' if run.result == 'PASS' else 'fail' }}"></span>
+        <a href="{{ url_for('validation.view_run', run_id=run.id) }}" class="activity-filename mono">{{ run.original_filename }}</a>
+        <span class="activity-result {{ 'result-pass' if run.result == 'PASS' else 'result-fail' }}">{{ run.result }}</span>
+        <span class="activity-score">{{ run.score }}/100</span>
+        <span class="activity-time mono muted">{{ run.submitted_at }}</span>
+      </li>
+    {% endfor %}
+  </ul>
+</section>
+
+{% endif %}
+{% endblock %}

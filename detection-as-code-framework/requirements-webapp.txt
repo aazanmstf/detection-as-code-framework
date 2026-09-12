@@ -1,0 +1,12 @@
+# Additional dependencies for the secure multi-user web application
+# (webapp/). The core validator/CLI/tests only need requirements.txt at
+# the repo root - these are only needed to run the webapp.
+
+Flask>=3.0.0
+Flask-WTF>=1.2.1
+python-dotenv>=1.0.1
+
+# Production WSGI server (used later at deploy time - see DEPLOYMENT.md).
+# Not required for local development, where `python webapp/app.py` uses
+# Flask's built-in dev server.
+gunicorn>=22.0.0

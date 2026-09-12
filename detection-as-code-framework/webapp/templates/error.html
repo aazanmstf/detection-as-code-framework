@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% block title %}{{ code }} - Detection as Code{% endblock %}
+{% macro error_body() %}
+  <section class="panel empty-state reveal-up">
+    <span class="empty-icon" aria-hidden="true">&#9888;</span>
+    <h3>Error {{ code }}</h3>
+    <p>{{ message }}</p>
+    <a class="btn" href="{{ url_for('validation.dashboard') if current_user else url_for('auth.login') }}">
+      {{ "Back to Dashboard" if current_user else "Back to Log In" }}
+    </a>
+  </section>
+{% endmacro %}
+{% block content %}{{ error_body() }}{% endblock %}
+{% block auth_content %}{{ error_body() }}{% endblock %}
